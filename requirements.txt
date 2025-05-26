@@ -5,3 +5,5 @@ onnxruntime
 numpy
 pillow
 streamlit
+PytorchWildlife
+cv2
