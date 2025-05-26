@@ -5,7 +5,7 @@ from torchvision import transforms, models
 import torch.nn as nn
 import os
 import requests
-import gdown 
+# import gdown 
 
 # --- Configuration de la page ---
 st.set_page_config(page_title="Classification Animale", page_icon="🐾", layout="centered")
@@ -40,15 +40,17 @@ model = models.inception_v3(pretrained=True)
 num_classes = 6
 model.fc = nn.Linear(model.fc.in_features, num_classes)
 
-weights_path = "inception_weights_version2.pth"
+# weights_path = "inception_weights_version2.pth"
+
+weights_path = os.path.join("model", "inception_weights_version2.pth")
 
 # if not os.path.exists(weights_path):
 #     file_id = "1kvKxbPthFSGj5fLxPMe0K1H9WWX_w0fT"  # Ton ID Google Drive
 #     download_file_from_google_drive(file_id, weights_path)
 
-if not os.path.exists(weights_path):
-    url = "https://drive.google.com/uc?id=1kvKxbPthFSGj5fLxPMe0K1H9WWX_w0fT"
-    gdown.download(url, weights_path, quiet=False)
+# if not os.path.exists(weights_path):
+#     url = "https://drive.google.com/uc?id=1kvKxbPthFSGj5fLxPMe0K1H9WWX_w0fT"
+#     gdown.download(url, weights_path, quiet=False)
 
 state_dict = torch.load(weights_path, map_location=torch.device('cpu'),weights_only=False)
 model.load_state_dict(state_dict)
