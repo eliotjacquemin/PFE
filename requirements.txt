@@ -6,4 +6,4 @@ numpy
 pillow
 streamlit
 PytorchWildlife
-cv2
+opencv-python
