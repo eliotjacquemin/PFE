@@ -5,5 +5,3 @@ onnxruntime
 numpy
 pillow
 streamlit
-os
-gdown
