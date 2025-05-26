@@ -45,7 +45,7 @@ if not os.path.exists(weights_path):
     file_id = "1kvKxbPthFSGj5fLxPMe0K1H9WWX_w0fT"  # Ton ID Google Drive
     download_file_from_google_drive(file_id, weights_path)
 
-state_dict = torch.load(weights_path, map_location=torch.device('cpu'))
+state_dict = torch.load(weights_path, map_location=torch.device('cpu'),weights_only=False)
 model.load_state_dict(state_dict)
 model.eval()
 
