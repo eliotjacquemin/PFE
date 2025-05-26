@@ -3,6 +3,7 @@ from PIL import Image
 import torch
 from torchvision import transforms, models
 import torch.nn as nn
+import os 
 
 # --- Configuration de la page ---
 st.set_page_config(page_title="Classification Animale", page_icon="🐾", layout="centered")
@@ -16,7 +17,7 @@ model = models.inception_v3(pretrained=True)
 num_classes = 6
 model.fc = nn.Linear(model.fc.in_features, num_classes)
 
-weights_path = r"C:\Users\HP\Documents\Mulhouse\Poids\inception_weights_version2.pth"
+weights_path = os.path.join("model", "inception_weights_version2.pth")
 state_dict = torch.load(weights_path, map_location=torch.device('cpu'))
 model.load_state_dict(state_dict)
 model.eval()
