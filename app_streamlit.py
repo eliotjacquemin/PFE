@@ -17,7 +17,7 @@ model = models.inception_v3(pretrained=True)
 num_classes = 6
 model.fc = nn.Linear(model.fc.in_features, num_classes)
 
-weights_path = os.path.join("model", "inception_weights_version2.pth")
+weights_path = "inception_weights_version2.pth"
 state_dict = torch.load(weights_path, map_location=torch.device('cpu'))
 model.load_state_dict(state_dict)
 model.eval()
