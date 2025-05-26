@@ -4,6 +4,7 @@ import torch
 from torchvision import transforms, models
 import torch.nn as nn
 import os 
+import urllib.request 
 
 # --- Configuration de la page ---
 st.set_page_config(page_title="Classification Animale", page_icon="🐾", layout="centered")
@@ -17,7 +18,11 @@ model = models.inception_v3(pretrained=True)
 num_classes = 6
 model.fc = nn.Linear(model.fc.in_features, num_classes)
 
-weights_path = os.path.join(os.path.dirname(__file__), "inception_weights_version2.pth")
+weights_path = "inception_weights_version2.pth"
+
+if not os.path.exists(weights_path):
+    url = "https://drive.google.com/uc?export=download&id=1kvKxbPthFSGj5fLxPMe0K1H9WWX_w0fT"  # remplace par ton ID
+    urllib.request.urlretrieve(url, weights_path)
 state_dict = torch.load(weights_path, map_location=torch.device('cpu'))
 model.load_state_dict(state_dict)
 model.eval()
