@@ -3,8 +3,8 @@ from PIL import Image
 import torch
 from torchvision import transforms, models
 import torch.nn as nn
-import os 
-import urllib.request 
+import os
+import requests
 
 # --- Configuration de la page ---
 st.set_page_config(page_title="Classification Animale", page_icon="🐾", layout="centered")
@@ -12,6 +12,27 @@ st.set_page_config(page_title="Classification Animale", page_icon="🐾", layout
 # --- En-tête ---
 st.markdown("<h1 style='text-align: center; color: #4B8BBE;'>Classification d'animaux 🐾</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center;'>Téléverse une image d'animal pour obtenir une prédiction !</p>", unsafe_allow_html=True)
+
+# --- Fonction pour télécharger depuis Google Drive ---
+def download_file_from_google_drive(id, destination):
+    URL = "https://docs.google.com/uc?export=download"
+    session = requests.Session()
+
+    response = session.get(URL, params={'id': id}, stream=True)
+    token = None
+
+    for key, value in response.cookies.items():
+        if key.startswith('download_warning'):
+            token = value
+
+    if token:
+        params = {'id': id, 'confirm': token}
+        response = session.get(URL, params=params, stream=True)
+
+    with open(destination, "wb") as f:
+        for chunk in response.iter_content(32768):
+            if chunk:
+                f.write(chunk)
 
 # --- Chargement du modèle ---
 model = models.inception_v3(pretrained=True)
@@ -21,8 +42,9 @@ model.fc = nn.Linear(model.fc.in_features, num_classes)
 weights_path = "inception_weights_version2.pth"
 
 if not os.path.exists(weights_path):
-    url = "https://drive.google.com/uc?export=download&id=1kvKxbPthFSGj5fLxPMe0K1H9WWX_w0fT"  # remplace par ton ID
-    urllib.request.urlretrieve(url, weights_path)
+    file_id = "1kvKxbPthFSGj5fLxPMe0K1H9WWX_w0fT"  # Ton ID Google Drive
+    download_file_from_google_drive(file_id, weights_path)
+
 state_dict = torch.load(weights_path, map_location=torch.device('cpu'))
 model.load_state_dict(state_dict)
 model.eval()
@@ -60,4 +82,3 @@ if uploaded_file is not None:
         for i, p in enumerate(proba):
             st.progress(p.item())
             st.write(f"**{classes[i]}** : {p:.2%}")
-
