@@ -5,6 +5,10 @@ from torchvision import transforms, models
 import torch.nn as nn
 import os
 import requests
+from PytorchWildlife.models import detection as pw_detection
+import numpy as np
+import cv2
+
 # import gdown 
 
 # --- Configuration de la page ---
@@ -57,6 +61,9 @@ state_dict = torch.load(weights_path, map_location=torch.device('cpu'),weights_o
 model.load_state_dict(state_dict)
 model.eval()
 
+# --- Chargement du model de détection ---
+detection_model = pw_detection.MegaDetectorV5()
+
 # --- Classes ---
 classes = ['blaireau', 'chevreuil', 'renard', 'hérisson', 'loutre', 'mustélidé']
 
@@ -75,6 +82,16 @@ if uploaded_file is not None:
     image = Image.open(uploaded_file).convert("RGB")
     with col1:
         st.image(image, caption="Image chargée", use_container_width=True)
+        
+    # --- Détection ---
+    detection = detection_model.single_image_detection(np.array(image))
+    result = detection["detections"]
+    if len(result.xyxy) > 0:
+        x1, y1, x2, y2 = map(int, result.xyxy[0])
+        conf = float(result.confidence[0])
+    else:
+        x1, y1, x2, y2, conf = 0, 0, 0, 0, 0.0
+    
 
     # --- Prédiction ---
     input_tensor = transform(image).unsqueeze(0)
@@ -83,10 +100,18 @@ if uploaded_file is not None:
         proba = torch.nn.functional.softmax(outputs[0], dim=0)
         top1 = torch.argmax(proba).item()
 
-    # --- Résultats ---
-    with col2:
-        st.success(f"### 🧠 Classe prédite : `{classes[top1]}`")
-        st.markdown("#### 🔍 Probabilités par classe :")
-        for i, p in enumerate(proba):
-            st.progress(p.item())
-            st.write(f"**{classes[i]}** : {p:.2%}")
+    # --- Dessiner bbox sur l'image ---
+    if conf > 0:
+        # Convert PIL to np.array BGR
+        img_cv = np.array(image)[:, :, ::-1].copy()  # RGB->BGR
+        cv2.rectangle(img_cv, (x1, y1), (x2, y2), (255, 0, 0), 2)
+        label = f"{conf:.2f}"
+        cv2.putText(img_cv, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
+        # Convert back to RGB PIL
+        img_rgb = cv2.cvtColor(img_cv, cv2.COLOR_BGR2RGB)
+        img_pil = Image.fromarray(img_rgb)
+
+        # Afficher image annotée
+        st.image(img_pil, caption="Image avec détection", use_container_width=True)
+    else:
+        st.info("Aucune détection trouvée.")
