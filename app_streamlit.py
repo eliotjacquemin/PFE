@@ -12,7 +12,8 @@ st.set_page_config(page_title="Classification Animale", page_icon="🐾", layout
 
 # --- En-tête ---
 st.markdown("<h1 style='text-align: center; color: #4B8BBE;'>Classification d'animaux 🐾</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center;'>Téléverse une image d'animal pour obtenir une prédiction !</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'>Téléverse une image d'animal pour obtenir une prédiction ! </p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'> ATTENTION ! Classes disponibles : blaireau, chevreuil, renard, hérisson, loutre et mustélidé !  </p>", unsafe_allow_html=True)
 
 # --- Fonction pour télécharger depuis Google Drive ---
 def download_file_from_google_drive(id, destination):
