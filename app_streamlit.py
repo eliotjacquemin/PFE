@@ -9,6 +9,7 @@ from PytorchWildlife.models import detection as pw_detection
 import numpy as np
 import cv2 
 from yolov5.utils.general import non_max_suppression
+import sys 
 # from yolov5.models.common import DetectMultiBackend
 os.system("git lfs install && git lfs pull")
 
@@ -20,6 +21,7 @@ os.system("git lfs install && git lfs pull")
 st.set_page_config(page_title="Classification Animale", page_icon="🐾", layout="centered")
 
 # --- En-tête ---
+st.write(f"Python version: {sys.version}")
 st.markdown("<h1 style='text-align: center; color: #4B8BBE;'>Classification d'animaux 🐾</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center;'>Téléverse une image d'animal pour obtenir une prédiction ! </p>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color : red'> ATTENTION ! Classes disponibles : blaireau, chevreuil, renard, hérisson, loutre et mustélidé !  </p>", unsafe_allow_html=True)
@@ -131,5 +133,6 @@ if uploaded_file is not None:
     img_pil = Image.fromarray(img_resized)
 
     # Afficher image annotée
+    st.markdown("<p style='text-align: center; color = blue'> Voilà le résultat de la détection faites sur l'image choisie ! </p>", unsafe_allow_html=True)
     st.image(img_pil, caption="Image avec détection", use_container_width=True)
 
