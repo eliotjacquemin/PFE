@@ -65,7 +65,7 @@ model.eval()
 
 # --- Chargement du model de détection ---
 weights_path = os.path.join("model","MegaDetectorV5.pt")
-detection_model = torch.load(weights_path, map_location='cpu')['model'].float().fuse().eval()
+detection_model = torch.load(weights_path, map_location=torch.device('cpu'))['model'].float().fuse().eval()
 
 # --- Classes ---
 classes = ['blaireau', 'chevreuil', 'renard', 'hérisson', 'loutre', 'mustélidé']
