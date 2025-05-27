@@ -62,7 +62,8 @@ model.load_state_dict(state_dict)
 model.eval()
 
 # --- Chargement du model de détection ---
-detection_model = pw_detection.MegaDetectorV5()
+weights_path = "MegaDetectorV5.pt"
+model = torch.load("MegaDetectorV5.pt", map_location='cpu')['model'].float().fuse().eval()
 
 # --- Classes ---
 classes = ['blaireau', 'chevreuil', 'renard', 'hérisson', 'loutre', 'mustélidé']
@@ -84,14 +85,12 @@ if uploaded_file is not None:
         st.image(image, caption="Image chargée", use_container_width=True)
         
     # --- Détection ---
-    detection = detection_model.single_image_detection(np.array(image))
-    result = detection["detections"]
-    if len(result.xyxy) > 0:
-        x1, y1, x2, y2 = map(int, result.xyxy[0])
-        conf = float(result.confidence[0])
-    else:
-        x1, y1, x2, y2, conf = 0, 0, 0, 0, 0.0
-    
+img = cv2.imread(image_path)
+img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+# Redimensionner et normaliser (taille classique pour YOLOv5 = 640)
+img_resized = cv2.resize(img_rgb, (640, 640))
+img_tensor = torch.from_numpy(img_resized).permute(2, 0, 1).float() / 255.0  # (C,H,W), [0,1]
+img_tensor = img_tensor.unsqueeze(0)  # Ajouter dimension batch
 
     # --- Prédiction ---
     input_tensor = transform(image).unsqueeze(0)
