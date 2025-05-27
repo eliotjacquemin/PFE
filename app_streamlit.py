@@ -9,7 +9,8 @@ from PytorchWildlife.models import detection as pw_detection
 import numpy as np
 import cv2 
 from yolov5.utils.general import non_max_suppression
-from yolov5.models.common import DetectMultiBackend
+# from yolov5.models.common import DetectMultiBackend
+os.system("git lfs install && git lfs pull")
 
 
 
@@ -67,8 +68,8 @@ model.eval()
 
 # --- Chargement du model de détection ---
 weights_path = os.path.join("model","MegaDetectorV5.pt")
-# detection_model = torch.load(weights_path, map_location=torch.device('cpu'), weights_only=False)['model'].float().fuse().eval()
-detection_model = DetectMultiBackend(weights_path, device='cpu')
+detection_model = torch.load(weights_path, map_location=torch.device('cpu'), weights_only=False)['model'].float().fuse().eval()
+# detection_model = DetectMultiBackend(weights_path, device='cpu')
 
 # --- Classes ---
 classes = ['blaireau', 'chevreuil', 'renard', 'hérisson', 'loutre', 'mustélidé']
