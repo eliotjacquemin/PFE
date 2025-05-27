@@ -1,6 +1,6 @@
 streamlit==1.33.0
 torch==2.5.0
-torchvision==0.15.2
+torchvision==0.21.0
 numpy
 pillow
 opencv-python
