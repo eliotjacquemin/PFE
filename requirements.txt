@@ -7,3 +7,5 @@ pillow
 streamlit
 PytorchWildlife
 opencv-python
+yolov5
+ultralytics
