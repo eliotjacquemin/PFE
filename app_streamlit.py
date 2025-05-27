@@ -91,9 +91,9 @@ if uploaded_file is not None:
         st.image(image, caption="Image chargée", use_container_width=True)
         
     # --- Détection ---
-    img_rgb = cv2.cvtColor(np.array(image), cv2.COLOR_BGR2RGB)
+    # img_rgb = cv2.cvtColor(np.array(image), cv2.COLOR_BGR2RGB)
     # Redimensionner et normaliser (taille classique pour YOLOv5 = 640)
-    img_resized = cv2.resize(img_rgb, (640, 640))
+    img_resized = cv2.resize(np.array(image), (640, 640))
     img_tensor = torch.from_numpy(img_resized).permute(2, 0, 1).float() / 255.0  # (C,H,W), [0,1]
     img_tensor = img_tensor.unsqueeze(0)  # Ajouter dimension batch
     
@@ -127,8 +127,8 @@ if uploaded_file is not None:
 
     # --- Dessiner bbox sur l'image ---
     # Convert back to RGB PIL
-    img_rgb = cv2.cvtColor(img_resized, cv2.COLOR_BGR2RGB)
-    img_pil = Image.fromarray(img_rgb)
+    # img_rgb = cv2.cvtColor(img_resized, cv2.COLOR_BGR2RGB)
+    img_pil = Image.fromarray(img_resized)
 
     # Afficher image annotée
     st.image(img_pil, caption="Image avec détection", use_container_width=True)
