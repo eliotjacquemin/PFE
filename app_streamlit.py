@@ -8,6 +8,8 @@ import requests
 from PytorchWildlife.models import detection as pw_detection
 import numpy as np
 import cv2
+from yolov5.utils.general import non_max_suppression
+
 
 # import gdown 
 
@@ -63,7 +65,7 @@ model.eval()
 
 # --- Chargement du model de détection ---
 weights_path = "MegaDetectorV5.pt"
-model = torch.load("MegaDetectorV5.pt", map_location='cpu')['model'].float().fuse().eval()
+detection_model = torch.load("MegaDetectorV5.pt", map_location='cpu')['model'].float().fuse().eval()
 
 # --- Classes ---
 classes = ['blaireau', 'chevreuil', 'renard', 'hérisson', 'loutre', 'mustélidé']
@@ -85,12 +87,24 @@ if uploaded_file is not None:
         st.image(image, caption="Image chargée", use_container_width=True)
         
     # --- Détection ---
-img = cv2.imread(image_path)
-img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-# Redimensionner et normaliser (taille classique pour YOLOv5 = 640)
-img_resized = cv2.resize(img_rgb, (640, 640))
-img_tensor = torch.from_numpy(img_resized).permute(2, 0, 1).float() / 255.0  # (C,H,W), [0,1]
-img_tensor = img_tensor.unsqueeze(0)  # Ajouter dimension batch
+    img_rgb = cv2.cvtColor(np.array(image), cv2.COLOR_BGR2RGB)
+    # Redimensionner et normaliser (taille classique pour YOLOv5 = 640)
+    img_resized = cv2.resize(img_rgb, (640, 640))
+    img_tensor = torch.from_numpy(img_resized).permute(2, 0, 1).float() / 255.0  # (C,H,W), [0,1]
+    img_tensor = img_tensor.unsqueeze(0)  # Ajouter dimension batch
+    
+    with torch.no_grad():
+       results = detection_model(img_tensor)[0]
+       
+    # Appliquer NMS
+    detections = non_max_suppression(results, conf_thres=0.25, iou_thres=0.45)[0]
+
+    # Dessiner les détections sur l’image redimensionnée (640x640)
+    for *xyxy, conf, cls in detections:
+        label = f"{model.names[int(cls)]} {conf:.2f}"
+        cv2.rectangle(img_resized, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (255, 0, 0), 2)
+        cv2.putText(img_resized, label, (int(xyxy[0]), int(xyxy[1]) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+    
 
     # --- Prédiction ---
     input_tensor = transform(image).unsqueeze(0)
@@ -98,19 +112,20 @@ img_tensor = img_tensor.unsqueeze(0)  # Ajouter dimension batch
         outputs = model(input_tensor)
         proba = torch.nn.functional.softmax(outputs[0], dim=0)
         top1 = torch.argmax(proba).item()
+        
+    # --- Résultats ---
+    with col2:
+        st.success(f"### 🧠 Classe prédite : `{classes[top1]}`")
+        st.markdown("#### 🔍 Probabilités par classe :")
+        for i, p in enumerate(proba):
+            st.progress(p.item())
+            st.write(f"**{classes[i]}** : {p:.2%}")
 
     # --- Dessiner bbox sur l'image ---
-    if conf > 0:
-        # Convert PIL to np.array BGR
-        img_cv = np.array(image)[:, :, ::-1].copy()  # RGB->BGR
-        cv2.rectangle(img_cv, (x1, y1), (x2, y2), (255, 0, 0), 2)
-        label = f"{conf:.2f}"
-        cv2.putText(img_cv, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
-        # Convert back to RGB PIL
-        img_rgb = cv2.cvtColor(img_cv, cv2.COLOR_BGR2RGB)
-        img_pil = Image.fromarray(img_rgb)
+    # Convert back to RGB PIL
+    img_rgb = cv2.cvtColor(img_resized, cv2.COLOR_BGR2RGB)
+    img_pil = Image.fromarray(img_rgb)
 
-        # Afficher image annotée
-        st.image(img_pil, caption="Image avec détection", use_container_width=True)
-    else:
-        st.info("Aucune détection trouvée.")
+    # Afficher image annotée
+    st.image(img_pil, caption="Image avec détection", use_container_width=True)
+
