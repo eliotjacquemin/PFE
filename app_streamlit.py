@@ -7,7 +7,7 @@ import os
 import requests
 from PytorchWildlife.models import detection as pw_detection
 import numpy as np
-import cv2
+import cv2 
 from yolov5.utils.general import non_max_suppression
 
 
@@ -65,7 +65,7 @@ model.eval()
 
 # --- Chargement du model de détection ---
 weights_path = os.path.join("model","MegaDetectorV5.pt")
-detection_model = torch.load(weights_path, map_location=torch.device('cpu'))['model'].float().fuse().eval()
+detection_model = torch.load(weights_path, map_location=torch.device('cpu'), weights_only=False)['model'].float().fuse().eval()
 
 # --- Classes ---
 classes = ['blaireau', 'chevreuil', 'renard', 'hérisson', 'loutre', 'mustélidé']
