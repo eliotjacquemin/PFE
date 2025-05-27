@@ -1,8 +1,9 @@
 streamlit==1.33.0
-torch==2.0.1
+torch==2.5.0
 torchvision==0.15.2
 numpy
 pillow
 opencv-python
 onnx
 onnxruntime
+ultralytics
