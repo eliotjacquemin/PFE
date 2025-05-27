@@ -105,7 +105,7 @@ if uploaded_file is not None:
 
     # Dessiner les détections sur l’image redimensionnée (640x640)
     for *xyxy, conf, cls in detections:
-        label = f"{model.names[int(cls)]} {conf:.2f}"
+        label = f"{detection_model.names[int(cls)]} {conf:.2f}"
         cv2.rectangle(img_resized, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (255, 0, 0), 2)
         cv2.putText(img_resized, label, (int(xyxy[0]), int(xyxy[1]) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
     
