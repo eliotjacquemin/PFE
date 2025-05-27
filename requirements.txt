@@ -1,4 +1,4 @@
-storch
+torch
 torchvision
 onnx
 onnxruntime
