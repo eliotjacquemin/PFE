@@ -1,2 +1,4 @@
 libgl1
 git-lfs
+git+https://github.com/ultralytics/yolov5.git
+git+https://github.com/ultralytics/ultralytics.git
