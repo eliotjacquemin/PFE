@@ -1,3 +1,4 @@
+git+https://github.com/ultralytics/yolov5.git
 torch
 torchvision
 onnx
