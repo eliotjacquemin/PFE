@@ -3,7 +3,6 @@ from PIL import Image
 import torch
 from torchvision import transforms, models
 import torch.nn as nn
-<<<<<<< HEAD
 import torch.nn.functional as F
 import os
 import numpy as np
