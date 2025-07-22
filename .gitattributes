@@ -2,3 +2,4 @@ C:/Users/HP/Documents/Mulhouse/Poids/inception_weights_version2.pth filter=lfs d
 *.pth filter=lfs diff=lfs merge=lfs -text
 inception_weights_version2.pth filter=lfs diff=lfs merge=lfs -text
 *.pt filter=lfs diff=lfs merge=lfs -text
+*.pth.tar filter=lfs diff=lfs merge=lfs -text
