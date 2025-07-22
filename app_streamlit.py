@@ -133,6 +133,10 @@ if uploaded_file is not None:
     img_pil = Image.fromarray(img_resized)
 
     # Afficher image annotée
+<<<<<<< HEAD
     st.markdown("<p style='text-align: center; color = blue'> Voilà le résultat de la détection faite sur l'image choisie ! </p>", unsafe_allow_html=True)
+=======
+    st.markdown("<p style='text-align: center; color = blue'> Voilà le résultat de la détection faites sur l'image choisie ! </p>", unsafe_allow_html=True)
+>>>>>>> a4a7a458a75e1d57b833efee3f3dd12ddb877d96
     st.image(img_pil, caption="Image avec détection", use_container_width=True)
 
