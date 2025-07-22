@@ -37,7 +37,7 @@ def backward_hook(module, grad_in, grad_out):
 
 # Modèle de classification
 model = models.inception_v3(pretrained=True)
-num_classes = 6
+num_classes = 5
 model.fc = nn.Linear(model.fc.in_features, num_classes)
 weights_path = os.path.join("model", "inception_weights_version6.pth")
 state_dict = torch.load(weights_path, map_location=torch.device('cpu'), weights_only=False)
@@ -52,7 +52,7 @@ model.Mixed_7c.register_backward_hook(backward_hook)
 detection_model = YOLO("model/MDV6-yolov9-e-1280.pt")
 
 # Classes
-classes = ['blaireau', 'chevreuil', 'renard', 'hérisson', 'loutre', 'mustélidé']
+classes = ['blaireau', 'chevreuil', 'renard', 'hérisson', 'loutre']
 
 # Prétraitement
 transform = transforms.Compose([
