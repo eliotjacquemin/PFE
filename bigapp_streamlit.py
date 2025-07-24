@@ -8,8 +8,11 @@ import os
 import numpy as np
 import cv2
 import sys
+from datetime import datetime
 from yolov5.utils.general import non_max_suppression
 from ultralytics import YOLO
+from collections import defaultdict
+import io
 
 # Configuration
 os.system("git lfs install && git lfs pull")
@@ -64,13 +67,15 @@ transform = transforms.Compose([
 # Upload images
 uploaded_files = st.file_uploader("📁 Choisis plusieurs images (JPG ou PNG)", type=["jpg", "png"], accept_multiple_files=True)
 
+# Structure de données pour stocker les résultats
+detection_results = []
+
 if uploaded_files:
     for uploaded_file in uploaded_files:
         with st.expander(f"📷 Image : {uploaded_file.name}"):
             st.markdown(f"---\n### 📷 Image : {uploaded_file.name}")
             col1, col2 = st.columns([1, 2])
             image = Image.open(uploaded_file).convert("RGB")
-
             with col1:
                 st.image(image, caption="Image chargée", use_container_width=True)
 
@@ -78,13 +83,10 @@ if uploaded_files:
             img_resized = cv2.resize(np.array(image), (1280, 1280))
             img_tensor = torch.from_numpy(img_resized).permute(2, 0, 1).float() / 255.0
             img_tensor = img_tensor.unsqueeze(0)
-
             with torch.no_grad():
                 results = detection_model(img_tensor)[0]
-
             boxes = results.boxes
             gradcam_imgs = []
-
             for idx, box in enumerate(boxes):
                 xyxy = box.xyxy[0].cpu().numpy().astype(int)
                 conf = box.conf[0].item()
@@ -94,12 +96,10 @@ if uploaded_files:
                 cv2.putText(img_resized, f"{label} #{idx+1}", (xyxy[0], xyxy[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
                 roi = image.crop((xyxy[0], xyxy[1], xyxy[2], xyxy[3]))
                 input_tensor = transform(roi).unsqueeze(0)
-
                 with torch.no_grad():
                     outputs = model(input_tensor)
                     proba = torch.nn.functional.softmax(outputs[0], dim=0)
                     top1 = torch.argmax(proba).item()
-
                 with col2:
                     st.success(f"### 🧠 Classe prédite pour la ROI #{idx+1} : {classes[top1]}")
                     st.markdown("#### 🔍 Probabilités par classe :")
@@ -119,7 +119,6 @@ if uploaded_files:
                 cam = cam.squeeze().cpu().detach().numpy()
                 cam = cv2.resize(cam, (299, 299))
                 cam = (cam - cam.min()) / (cam.max() - cam.min())
-
                 # Générer la heatmap
                 heatmap = cv2.applyColorMap(np.uint8(255 * cam), cv2.COLORMAP_JET)
                 heatmap = cv2.resize(heatmap, (roi.width, roi.height))
@@ -132,12 +131,18 @@ if uploaded_files:
                 img_with_cam[y1:y2, x1:x2] = superimposed
                 img_with_cam = cv2.cvtColor(img_with_cam, cv2.COLOR_BGR2RGB)
 
+                # Stocker les résultats de détection et de classification
+                detection_results.append({
+                    "date": datetime.now().strftime("%Y-%m-%d"),
+                    "time": datetime.now().strftime("%H:%M:%S"),
+                    "site": "site1",
+                    "animal": classes[top1]
+                })
+
             img_pil = Image.fromarray(img_resized)
             tab1, tab2, tab3 = st.tabs(["Original", "Detected", "Grad-CAM"])
-
             with tab1:
                 st.image(image, use_container_width=True, caption="Image originale")
-
             with tab2:
                 st.image(img_pil, use_container_width=True, caption="Image avec détection")
                 for idx, box in enumerate(boxes):
@@ -145,9 +150,46 @@ if uploaded_files:
                     width = x2 - x1
                     height = y2 - y1
                     st.write(f"Taille de la bounding box {idx+1}: {width} x {height} pixels")
-
             with tab3:
                 st.image(img_with_cam, use_container_width=True, caption="Grad-CAM dans la détection")
+
+# Organiser les résultats par jour et par espèce animale
+def organize_results_by_day_and_species(detection_results):
+    organized_results = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    for result in detection_results:
+        date = result["date"]
+        site = result["site"]
+        animal = result["animal"]
+        time = result["time"]
+        organized_results[date][site][animal].append(time)
+    return organized_results
+
+# Sauvegarder les résultats dans un fichier texte
+def save_detection_results_to_file(organized_results):
+    with io.StringIO() as f:
+        for date, sites in sorted(organized_results.items()):
+            f.write(f"Date: {date}\n")
+            for site, animals in sites.items():
+                f.write(f"  Site: {site}\n")
+                for animal, times in animals.items():
+                    times_sorted = sorted(times)
+                    if times_sorted:
+                        start_time = times_sorted[0]
+                        end_time = times_sorted[-1]
+                        f.write(f"    {animal}: actif de {start_time} à {end_time}\n")
+                f.write("\n")
+            f.write("\n")
+        return f.getvalue()
+
+# Fournir un lien de téléchargement pour le fichier texte
+if detection_results:
+    organized_results = organize_results_by_day_and_species(detection_results)
+    st.download_button(
+        label="Télécharger les résultats de détection",
+        data=save_detection_results_to_file(organized_results),
+        file_name="detection_results.txt",
+        mime="text/plain"
+    )
 
 st.markdown("""
     <hr>
