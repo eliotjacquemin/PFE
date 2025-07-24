@@ -77,7 +77,7 @@ if uploaded_files:
             col1, col2 = st.columns([1, 2])
             image = Image.open(uploaded_file).convert("RGB")
             with col1:
-                st.image(image, caption="Image chargée", use_container_width=True)
+                st.image(image, caption="Image chargée", use_column_width=True)
 
             # Détection
             img_resized = cv2.resize(np.array(image), (1280, 1280))
@@ -142,16 +142,16 @@ if uploaded_files:
             img_pil = Image.fromarray(img_resized)
             tab1, tab2, tab3 = st.tabs(["Original", "Detected", "Grad-CAM"])
             with tab1:
-                st.image(image, use_container_width=True, caption="Image originale")
+                st.image(image, use_column_width=True, caption="Image originale")
             with tab2:
-                st.image(img_pil, use_container_width=True, caption="Image avec détection")
+                st.image(img_pil, use_column_width=True, caption="Image avec détection")
                 for idx, box in enumerate(boxes):
                     x1, y1, x2, y2 = map(int, box.xyxy[0].cpu().numpy().astype(int))
                     width = x2 - x1
                     height = y2 - y1
                     st.write(f"Taille de la bounding box {idx+1}: {width} x {height} pixels")
             with tab3:
-                st.image(img_with_cam, use_container_width=True, caption="Grad-CAM dans la détection")
+                st.image(img_with_cam, use_column_width=True, caption="Grad-CAM dans la détection")
 
 # Organiser les résultats par jour et par espèce animale
 def organize_results_by_day_and_species(detection_results):
